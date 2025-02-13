@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: workreport
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workreport
+    username: postgres
+    password: 1234qwer
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
