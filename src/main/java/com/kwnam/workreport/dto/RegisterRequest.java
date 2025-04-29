@@ -17,10 +17,12 @@ public class RegisterRequest {
     private String password;
 
     @NotNull(message = "Name is required")
-    @Size(max = 50, message = "Name must not exceed 50 characters")
     private String name;
 
     @NotNull(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
+
+    @NotNull(message = "Verification code is required")
+    private String verificationCode; // ✅ 인증 코드 추가
 }

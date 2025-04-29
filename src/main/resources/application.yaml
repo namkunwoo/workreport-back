@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   application:
     name: workreport
@@ -9,3 +11,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: namkunwooo@gmail.com
+    password: hpdi mdev yris pcym
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+jwt:
+  secret: pdiw8fwef9wFefqvli28vwef7qwd8hfwq923fjwefwe09fwv
