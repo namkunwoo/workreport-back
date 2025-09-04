@@ -57,6 +57,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "❌ 회원가입에 실패했습니다: " + e.getMessage()));
         }
     }
+    
+    // ✅ 이메일 중복 체크
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean exists = userRepository.existsByEmail(email);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
 
     // ✅ 로그인 API (JWT + 사용자 정보 반환)
     @PostMapping("/login")
@@ -143,4 +150,31 @@ public class AuthController {
         }
     }
 
+    // ✅ 비밀번호 재설정 이메일 요청
+    @PostMapping("/reset-password-request")
+    public ResponseEntity<?> requestResetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        try {
+            emailService.sendPasswordResetLink(email);
+            return ResponseEntity.ok(Map.of("success", true, "message", "✅ 비밀번호 재설정 링크가 이메일로 전송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "❌ 이메일 전송 실패: " + e.getMessage()));
+        }
+    }
+
+    // ✅ 비밀번호 재설정 완료
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        try {
+            authService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of("success", true, "message", "✅ 비밀번호가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "❌ 비밀번호 변경 실패: " + e.getMessage()));
+        }
+    }
+
+    
 }

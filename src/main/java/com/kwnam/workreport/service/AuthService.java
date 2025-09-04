@@ -1,27 +1,36 @@
 package com.kwnam.workreport.service;
 
 import java.util.Optional;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.kwnam.workreport.dto.AuthRequest;
 import com.kwnam.workreport.dto.RegisterRequest;
+import com.kwnam.workreport.entity.PasswordResetToken;
 import com.kwnam.workreport.entity.User;
+import com.kwnam.workreport.repository.PasswordResetTokenRepository;
 import com.kwnam.workreport.repository.UserRepository;
 import com.kwnam.workreport.security.JwtUtil;
+
 import jakarta.transaction.Transactional;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordResetTokenRepository tokenRepository;
+    
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final EmailService emailService;
+    
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, EmailService emailService) {
+    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, EmailService emailService, PasswordResetTokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
+        this.tokenRepository = tokenRepository;
     }
 
     // ✅ 이메일 인증 여부 확인 (추가된 부분)
@@ -81,5 +90,22 @@ public class AuthService {
     public String refreshJwtToken(String oldToken) {
         String username = jwtUtil.getUsernameIfValid(oldToken);
         return jwtUtil.generateToken(username); // 새 JWT 생성 후 반환
+    }
+    
+    // ✅ 로그인 연장 시 새 JWT 생성
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = tokenRepository.findByToken(token)
+            .orElseThrow(() -> new RuntimeException("유효하지 않은 토큰입니다."));
+
+        if (resetToken.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("토큰이 만료되었습니다.");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        tokenRepository.delete(resetToken); // 한 번 사용한 토큰 제거
     }
 }
