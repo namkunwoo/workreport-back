@@ -34,8 +34,8 @@ public class WorkReport {
     @Column(length = 1000)
     private String supportTeamMember;  // 동반 지원 팀원
 
-    // ✅ 캘린더 날짜와 연결 (옵션)
-    @ManyToOne
-    @JoinColumn(name = "work_day_id")
-    private WorkDay workDay;           // 연동된 WorkDay (nullable)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "work_day_id", nullable = false,
+        foreignKey = @ForeignKey(name = "fk_report_workday"))
+    private WorkDay workDay;
 }
